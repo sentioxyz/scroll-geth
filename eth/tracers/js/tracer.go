@@ -58,7 +58,7 @@ func init() {
 		name := camel(strings.TrimSuffix(file, ".js"))
 		assetTracers[name] = string(tracers.MustAsset(file))
 	}
-	tracers2.RegisterLookup(true, newJsTracer)
+	tracers2.DefaultDirectory.RegisterJSEval(newJsTracer)
 }
 
 // makeSlice convert an unsafe memory pointer with the given type into a Go byte
@@ -426,7 +426,7 @@ type jsTracer struct {
 // New instantiates a new tracer instance. code specifies a Javascript snippet,
 // which must evaluate to an expression returning an object with 'step', 'fault'
 // and 'result' functions.
-func newJsTracer(code string, ctx *tracers2.Context) (tracers2.Tracer, error) {
+func newJsTracer(code string, ctx *tracers2.Context, cfg json.RawMessage) (tracers2.Tracer, error) {
 	if c, ok := assetTracers[code]; ok {
 		code = c
 	}
@@ -830,6 +830,12 @@ func (jst *jsTracer) CaptureExit(output []byte, gasUsed uint64, err error) {
 	if _, err := jst.call(true, "exit", "frameResult"); err != nil {
 		jst.err = wrapError("exit", err)
 	}
+}
+
+func (jst *jsTracer) CaptureTxStart(gasLimit uint64) {
+}
+
+func (jst *jsTracer) CaptureTxEnd(restGas uint64) {
 }
 
 // GetResult calls the Javascript 'result' function and returns its value, or any accumulated error

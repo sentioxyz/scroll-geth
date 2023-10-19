@@ -43,6 +43,7 @@ import (
 	// Force-load the tracer engines to trigger registration
 	_ "github.com/scroll-tech/go-ethereum/eth/tracers/js"
 	_ "github.com/scroll-tech/go-ethereum/eth/tracers/native"
+	_ "github.com/scroll-tech/go-ethereum/eth/tracers/sentio"
 
 	"gopkg.in/urfave/cli.v1"
 )

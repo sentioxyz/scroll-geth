@@ -382,15 +382,24 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 		contractCreation = msg.To() == nil
 	)
 
+	if tracer := st.evm.Config.Tracer; tracer != nil {
+		tracer.CaptureTxStart(st.initialGas)
+		defer func() {
+			tracer.CaptureTxEnd(st.gas)
+		}()
+	}
+
 	// Check clauses 4-5, subtract intrinsic gas if everything is correct
-	gas, err := IntrinsicGas(st.data, st.msg.AccessList(), st.msg.SetCodeAuthorizations(), contractCreation, rules.IsHomestead, rules.IsIstanbul, rules.IsShanghai)
-	if err != nil {
-		return nil, err
+	if !st.evm.Config.IgnoreGas {
+		gas, err := IntrinsicGas(st.data, st.msg.AccessList(), st.msg.SetCodeAuthorizations(), contractCreation, rules.IsHomestead, rules.IsIstanbul, rules.IsShanghai)
+		if err != nil {
+			return nil, err
+		}
+		if st.gas < gas {
+			return nil, fmt.Errorf("%w: have %d, want %d", ErrIntrinsicGas, st.gas, gas)
+		}
+		st.gas -= gas
 	}
-	if st.gas < gas {
-		return nil, fmt.Errorf("%w: have %d, want %d", ErrIntrinsicGas, st.gas, gas)
-	}
-	st.gas -= gas
 
 	// Check clause 6
 	// Note: If this is an L1MessageTx, we will not return a top-level ErrInsufficientFundsForTransfer.
@@ -401,7 +410,7 @@ func (st *StateTransition) TransitionDb() (*ExecutionResult, error) {
 	}
 
 	// Check whether the init code size has been exceeded.
-	if rules.IsShanghai && contractCreation && len(st.data) > params.MaxInitCodeSize {
+	if !st.evm.Config.IgnoreCodeSizeLimit && rules.IsShanghai && contractCreation && len(st.data) > params.MaxInitCodeSize {
 		return nil, fmt.Errorf("%w: code size %v limit %v", ErrMaxInitCodeSizeExceeded, len(st.data), params.MaxInitCodeSize)
 	}
 	// Execute the preparatory steps for state transition which includes:
