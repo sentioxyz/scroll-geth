@@ -30,7 +30,7 @@ import (
 )
 
 func init() {
-	register("4byteTracer", newFourByteTracer)
+	tracers.DefaultDirectory.Register("4byteTracer", newFourByteTracer, false)
 }
 
 // fourByteTracer searches for 4byte-identifiers, and collects them for post-processing.
@@ -57,11 +57,11 @@ type fourByteTracer struct {
 
 // newFourByteTracer returns a native go tracer which collects
 // 4 byte-identifiers of a tx, and implements vm.EVMLogger.
-func newFourByteTracer(ctx *tracers.Context) tracers.Tracer {
+func newFourByteTracer(ctx *tracers.Context, _ json.RawMessage) (tracers.Tracer, error) {
 	t := &fourByteTracer{
 		ids: make(map[string]int),
 	}
-	return t
+	return t, nil
 }
 
 // isPrecompiled returns whether the addr is a precompile. Logic borrowed from newJsTracer in eth/tracers/js/tracer.go
@@ -152,3 +152,6 @@ func (t *fourByteTracer) Stop(err error) {
 	t.reason = err
 	atomic.StoreUint32(&t.interrupt, 1)
 }
+
+func (t *fourByteTracer) CaptureTxStart(gasLimit uint64) {}
+func (t *fourByteTracer) CaptureTxEnd(restGas uint64)    {}

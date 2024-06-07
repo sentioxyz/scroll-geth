@@ -30,6 +30,7 @@ import (
 	"github.com/scroll-tech/go-ethereum/common/hexutil"
 	"github.com/scroll-tech/go-ethereum/common/math"
 	corestate "github.com/scroll-tech/go-ethereum/core/state"
+	"github.com/scroll-tech/go-ethereum/core/types"
 	"github.com/scroll-tech/go-ethereum/core/vm"
 	"github.com/scroll-tech/go-ethereum/eth/tracers"
 	"github.com/scroll-tech/go-ethereum/log"
@@ -155,7 +156,7 @@ func (t *sentioTracer) CaptureTxEnd(restGas uint64) {
 	}
 }
 
-func (t *sentioTracer) CaptureStart(env *vm.EVM, from common.Address, to common.Address, create bool, input []byte, gas uint64, value *big.Int) {
+func (t *sentioTracer) CaptureStart(env *vm.EVM, from common.Address, to common.Address, create bool, input []byte, gas uint64, value *big.Int, authorizationResults []types.AuthorizationResult) {
 	t.env = env
 	t.receipt.BlockNumber = (*hexutil.Big)(env.Context.BlockNumber)
 	// TODO this current will block the tracer
@@ -166,7 +167,7 @@ func (t *sentioTracer) CaptureStart(env *vm.EVM, from common.Address, to common.
 		t.receipt.TransactionIndex = uint(ibs.TxIndex())
 	}
 
-	rules := env.ChainConfig().Rules(env.Context.BlockNumber)
+	rules := env.ChainConfig().Rules(env.Context.BlockNumber, env.Context.Time.Uint64())
 	t.activePrecompiles = vm.ActivePrecompiles(rules)
 
 	root := Trace{

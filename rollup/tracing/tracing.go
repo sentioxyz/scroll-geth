@@ -331,10 +331,6 @@ func (env *TraceEnv) getTxResult(state *state.StateDB, index int, block *types.B
 	if err != nil {
 		return fmt.Errorf("failed to create callTracer: %w", err)
 	}
-	prestateTracer, err := tracers.DefaultDirectory.New("prestateTracer", &tracerContext, nil)
-	if err != nil {
-		return fmt.Errorf("failed to create prestateTracer: %w", err)
-	}
 
 	applyMessageStart := time.Now()
 	structLogger := vm.NewStructLogger(env.logConfig)

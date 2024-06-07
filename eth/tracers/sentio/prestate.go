@@ -25,6 +25,7 @@ import (
 
 	"github.com/scroll-tech/go-ethereum/common"
 	"github.com/scroll-tech/go-ethereum/common/hexutil"
+	"github.com/scroll-tech/go-ethereum/core/types"
 	"github.com/scroll-tech/go-ethereum/core/vm"
 	"github.com/scroll-tech/go-ethereum/crypto"
 	"github.com/scroll-tech/go-ethereum/eth/tracers"
@@ -104,7 +105,7 @@ func newSentioPrestateTracer(ctx *tracers.Context, cfg json.RawMessage) (tracers
 }
 
 // CaptureStart implements the EVMLogger interface to initialize the tracing operation.
-func (t *sentioPrestateTracer) CaptureStart(env *vm.EVM, from common.Address, to common.Address, create bool, input []byte, gas uint64, value *big.Int) {
+func (t *sentioPrestateTracer) CaptureStart(env *vm.EVM, from common.Address, to common.Address, create bool, input []byte, gas uint64, value *big.Int, authorizationResults []types.AuthorizationResult) {
 	t.env = env
 	t.create = create
 	t.to = to

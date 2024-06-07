@@ -1122,7 +1122,7 @@ func (api *API) traceBundle(ctx context.Context, bundle *Bundle, simulateContext
 		config.BlockOverrides.Apply(&vmctx)
 	}
 	// Execute the trace
-	signer := types.MakeSigner(api.backend.ChainConfig(), block.Number())
+	signer := types.MakeSigner(api.backend.ChainConfig(), block.Number(), block.Time())
 	for idx, args := range bundle.Transactions {
 		if args.Gas == nil {
 			gasCap := api.backend.RPCGasCap()
