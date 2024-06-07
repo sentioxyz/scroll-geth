@@ -1156,7 +1156,7 @@ func (api *API) traceBundle(ctx context.Context, bundle *Bundle, simulateContext
 		}
 
 		// TODO is this correct?
-		l1DataFee, err := fees.EstimateL1DataFeeForMessage(msg, block.BaseFee(), api.backend.ChainConfig().ChainID, signer, statedb)
+		l1DataFee, err := fees.EstimateL1DataFeeForMessage(msg, block.BaseFee(), api.backend.ChainConfig(), signer, statedb, block.Number())
 		if err != nil {
 			return nil, err
 		}
