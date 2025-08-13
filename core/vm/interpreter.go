@@ -21,6 +21,7 @@ import (
 	"sync/atomic"
 
 	"github.com/scroll-tech/go-ethereum/common"
+	"github.com/scroll-tech/go-ethereum/common/hexutil"
 	"github.com/scroll-tech/go-ethereum/common/math"
 	"github.com/scroll-tech/go-ethereum/log"
 )
@@ -36,6 +37,11 @@ type Config struct {
 	JumpTable [256]*operation // EVM instruction table, automatically populated if unset
 
 	ExtraEips []int // Additional EIPS that are to be enabled
+
+	CreationCodeOverrides map[common.Address]hexutil.Bytes
+	CreateAddressOverride *common.Address
+	IgnoreGas             bool
+	IgnoreCodeSizeLimit   bool
 }
 
 // ScopeContext contains the things that are per-call, such as stack and memory,
@@ -110,6 +116,22 @@ func NewEVMInterpreter(evm *EVM, cfg Config) *EVMInterpreter {
 				// Disable it, so caller can check if it's activated or not
 				cfg.ExtraEips = append(cfg.ExtraEips[:i], cfg.ExtraEips[i+1:]...)
 				log.Error("EIP activation failed", "eip", eip, "error", err)
+			}
+		}
+		if evm.Config.IgnoreGas {
+			jt = *copyJumpTable(&jt)
+			for i, op := range jt {
+				opCode := OpCode(i)
+				// retain call costs to prevent call stack from going too deep
+				// some contracts use a loop to burn gas
+				// if all codes in the loop have zero cost, it will run forever
+				if opCode == CALL || opCode == STATICCALL || opCode == CALLCODE || opCode == DELEGATECALL || opCode == GAS {
+					continue
+				}
+				op.constantGas = 0
+				op.dynamicGas = func(*EVM, *Contract, *Stack, *Memory, uint64) (uint64, error) {
+					return 0, nil
+				}
 			}
 		}
 		cfg.JumpTable = jt

@@ -68,3 +68,9 @@ func (t *MuxTracer) CaptureEnd(output []byte, gasUsed uint64, d time.Duration, e
 		tracer.CaptureEnd(output, gasUsed, d, err)
 	}
 }
+
+func (l *MuxTracer) CaptureTxStart(gasLimit uint64) {
+}
+
+func (l *MuxTracer) CaptureTxEnd(restGas uint64) {
+}
