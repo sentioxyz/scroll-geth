@@ -1144,7 +1144,7 @@ func (api *API) traceBundle(ctx context.Context, bundle *Bundle, simulateContext
 		config.BlockOverrides.Apply(&vmctx)
 	}
 	// Execute the trace
-	signer := types.MakeSigner(api.backend.ChainConfig(), block.Number())
+	signer := types.MakeSigner(api.backend.ChainConfig(), block.Number(), block.Time())
 	for idx, args := range bundle.Transactions {
 		if args.Gas == nil {
 			gasCap := api.backend.RPCGasCap()
@@ -1156,7 +1156,7 @@ func (api *API) traceBundle(ctx context.Context, bundle *Bundle, simulateContext
 		}
 
 		// TODO is this correct?
-		l1DataFee, err := fees.EstimateL1DataFeeForMessage(msg, block.BaseFee(), api.backend.ChainConfig(), signer, statedb, block.Number())
+		l1DataFee, err := fees.EstimateL1DataFeeForMessage(msg, block.BaseFee(), api.backend.ChainConfig(), signer, statedb, block.Number(), block.Time())
 		if err != nil {
 			return nil, err
 		}

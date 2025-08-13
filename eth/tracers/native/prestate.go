@@ -16,7 +16,7 @@ import (
 )
 
 func init() {
-	register("prestateTracer", newPrestateTracer)
+	tracers.DefaultDirectory.Register("prestateTracer", newPrestateTracer, false)
 }
 
 type state = map[common.Address]*account
@@ -62,13 +62,13 @@ type prestateTracer struct {
 	deleted   map[common.Address]bool
 }
 
-func newPrestateTracer(ctx *tracers.Context) tracers.Tracer {
+func newPrestateTracer(ctx *tracers.Context, _ json.RawMessage) (tracers.Tracer, error) {
 	return &prestateTracer{
 		pre:     state{},
 		post:    state{},
 		created: make(map[common.Address]bool),
 		deleted: make(map[common.Address]bool),
-	}
+	}, nil
 }
 
 // CaptureStart implements the EVMLogger interface to initialize the tracing operation.
