@@ -31,7 +31,7 @@ import (
 )
 
 func init() {
-	register("callTracer", newCallTracer)
+	tracers.DefaultDirectory.Register("callTracer", newCallTracer, false)
 }
 
 type callFrame struct {
@@ -56,11 +56,11 @@ type callTracer struct {
 
 // newCallTracer returns a native go tracer which tracks
 // call frames of a tx, and implements vm.EVMLogger.
-func newCallTracer(ctx *tracers.Context) tracers.Tracer {
+func newCallTracer(ctx *tracers.Context, _ json.RawMessage) (tracers.Tracer, error) {
 	// First callframe contains tx context info
 	// and is populated on start and end.
 	t := &callTracer{callstack: make([]callFrame, 0, 1)}
-	return t
+	return t, nil
 }
 
 // CaptureStart implements the EVMLogger interface to initialize the tracing operation.
@@ -187,3 +187,6 @@ func uintToHex(n uint64) string {
 func addrToHex(a common.Address) string {
 	return strings.ToLower(a.Hex())
 }
+
+func (t *callTracer) CaptureTxStart(gasLimit uint64) {}
+func (t *callTracer) CaptureTxEnd(restGas uint64)    {}

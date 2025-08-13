@@ -257,6 +257,9 @@ func (l *Logger) CaptureEnd(output []byte, gasUsed uint64, t time.Duration, err 
 	}
 }
 
+func (t *Logger) CaptureTxStart(gasLimit uint64) {}
+func (t *Logger) CaptureTxEnd(restGas uint64)    {}
+
 // Error returns an error if executed txns triggered an overflow
 // Caller should revert some transactions and close the block
 func (l *Logger) Error() error {

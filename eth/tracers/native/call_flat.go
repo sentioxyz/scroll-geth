@@ -33,7 +33,7 @@ import (
 
 func init() {
 	// tracers.DefaultDirectory.Register("flatCallTracer", newFlatCallTracer, false)
-	register("flatCallTracer", newFlatCallTracer)
+	tracers.DefaultDirectory.Register("flatCallTracer", newFlatCallTracer, false)
 }
 
 var parityErrorMapping = map[string]string{
@@ -113,10 +113,10 @@ type flatCallTracer struct {
 }
 
 // newFlatCallTracer returns a new flatCallTracer.
-func newFlatCallTracer(ctx *tracers.Context) tracers.Tracer {
-	t := &callTracer{callstack: make([]callFrame, 0, 1)}
+func newFlatCallTracer(ctx *tracers.Context, _ json.RawMessage) (tracers.Tracer, error) {
+	t := &callTracer{callstack: make([]callFrame, 1)}
 
-	return &flatCallTracer{callTracer: t, ctx: ctx}
+	return &flatCallTracer{callTracer: t, ctx: ctx}, nil
 
 }
 
@@ -318,3 +318,6 @@ func childTraceAddress(a []int, i int) []int {
 	child = append(child, i)
 	return child
 }
+
+func (t *flatCallTracer) CaptureTxStart(gasLimit uint64) {}
+func (t *flatCallTracer) CaptureTxEnd(restGas uint64)    {}
